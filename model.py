@@ -29,34 +29,25 @@ from nltk.corpus import stopwords, wordnet
 from data_augmentation import *
 
 
-#from google.colab import files
-# upl = files.upload()
-
-df = pd.read_csv(r'C:\Users\Daniel\OneDrive\Документы\datasets\disaster_tweets\tweets.csv')
+df = pd.read_csv(r'tweets.csv')
 tweets = df['text']
 labels = df['target']
-tweets
 
-labels.value_counts() # number of false tweets is wayyy higher, we have to fix that
+print(labels.value_counts()) # number of false tweets is wayyy higher, we have to fix that
 
 true_tweets = df[df['target'] == 1]['text']
-true_tweets
 
 aug_df = pd.DataFrame()
 aug_df['text'] = tweets
 aug_df['target'] = labels
-aug_df # before adding extra sentences
 
 new_true_tweets = augment_dataset(true_tweets)
 ones = pd.Series([1 for _ in range(len(new_true_tweets))])
 temp_df = pd.concat([new_true_tweets, ones], axis=1).reset_index(drop=True)
 temp_df.columns = ['text', 'target']
-temp_df
 
 aug_df = aug_df.append(temp_df).reset_index(drop=True)
-aug_df
-
-aug_df['target'].value_counts()
+print(aug_df['target'].value_counts()) # after dataset augmentation
 
 def preprocess_texts(tweets):
   phrases = [t.lower() for t in tweets.values]
@@ -94,14 +85,12 @@ tweets = aug_df['text']
 labels = aug_df['target']
 phrases = preprocess_texts(tweets)
 X_train, X_test, y_train, y_test = train_test_split(phrases, labels, train_size=0.7)
-X_test
 
 tokenizer = Tokenizer(num_words=10000, oov_token='<OOV>')
 tokenizer.fit_on_texts(X_train)
 
 X_train = pad_sequences(tokenizer.texts_to_sequences(X_train), padding='post')
 X_test = pad_sequences(tokenizer.texts_to_sequences(X_test), padding='post')
-X_test[0]
 
 vocab_size = len(tokenizer.word_index) + 1
 embedding_dimensions = 100
